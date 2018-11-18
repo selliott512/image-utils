@@ -1,0 +1,8 @@
+The following images:
+    test/data/in/Vertical_perspective_SW.jpg
+    test/data/in/240px-Vertical_perspective_SW.jpg
+were taken from Wikipedia page "General Perspective projection". The image was
+uploaded on 19:41, 15 August 2012 by Daniel R. Strebe.
+The license is CC BY-SA 3.0, which can be found here:
+    https://creativecommons.org/licenses/by-sa/3.0/
+No modifications to the images were made.

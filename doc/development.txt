@@ -1,0 +1,26 @@
+If you're interested in how image-utils works or in contributing to it this
+document may be helpful.
+
+image-utils is written in Python, so it should work on most systems with a
+reasonably recent version of Pillow installed.
+
+To submit a change to image-utils fork it and send a pull request. It's github
+page is https://github.com/selliott512/image-utils . If it's a lot of work and
+you'd like to discuss it first you can reach me at selliott512@gmail.com
+
+The organization and style of image-utils should be clear, but here are a few
+highlights that apply to bin/image-utils.py:
+1) Code is indented 4 spaces (no tabs).
+2) Methods and variable names are lower case with underscores ("_").
+3) It's divided into three sections:
+    // Globals
+    // Functions
+    // Main entry
+4) The functions are in alphabetical order.
+5) The long version of command line options are in alphabetical order.
+
+It's helpful to be familiar with the way coordinate systems work in graphics:
+    https://learnopengl.com/Getting-started/Coordinate-Systems
+
+TODO: Add more information about how image-utils works. For now hopefully the
+comments will be helpful.
