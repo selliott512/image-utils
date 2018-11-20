@@ -1,6 +1,22 @@
 #!/bin/bash
 
 # Tests for the image-utils project.
+# Copyright (C)2018S Steven Elliott
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
 
 # Global
 bname="${0##*/}"                    # Basename of this script.
@@ -63,7 +79,7 @@ pass_tests=(
     # amount, so 180 degrees is fine. Latitude is not accurate and adds
     # distortion.
     "$s2e -a 17.3843 -a 17.3843 --in-begin-x 1 --in-begin-y 1 --in-size 238 \
-        --full --offset-lat 10 --offset-lon 180 -bfo $tmp_dir/\$test_num.png \
+        --full --center-lat 10 --offset-lon 180 -bfo $tmp_dir/\$test_num.png \
         $test_data/in/earth.jpg" )
 
 # Tests that are expected have a non-zero exit.

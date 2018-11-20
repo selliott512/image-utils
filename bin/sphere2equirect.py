@@ -62,6 +62,12 @@ def parse_args():
         help="Angular size of the sphere.")
     parser.add_argument("-b", "--bilinear", action="store_true",
         help="Use bilinear interpolation instead of nearest.")
+    parser.add_argument("--center-lat", type=float, default=0.0,
+        help="The latitude at the center of the equirectangular output. "
+           + "Helpful for --multi.")
+    parser.add_argument("--center-lon", type=float, default=0.0,
+        help="The longitude at the center of the equirectangular output. "
+           + "Helpful for --multi.")
     parser.add_argument("-f", "--force", action="store_true",
         help="Overwrite the output image.")
     parser.add_argument("--full", action="store_true",
@@ -210,22 +216,24 @@ def process_image(in_fname, out_fname):
     # Avoid references to globals in the loop.
     bl = args.bilinear
     slp = slope
+    c_lat = -radians(args.center_lat)
+    c_lon = radians(args.center_lon)
 
     # "2.0" (float) used to allow the center of the center pixel to be chosen
     # in the case where the height is odd.
     in_pix = in_im.load()
     for out_x_range in range(eq_begin_x + inset, eq_end_x - inset):
-        out_x = (out_x_range + out_width) % out_width
+        out_x = out_x_range % out_width
         # The "+ 0.5" is to get the longitude at the center of the pixel.
         lon = math.pi * ((((out_x - eq_begin_x) + 0.5)/eq_size) -
-                         0.5) / scale
+                         0.5) / scale + c_lon
         for out_y_range in range(eq_begin_y + inset, eq_end_y - inset):
-            out_y = (out_y_range + out_height) % out_height
+            out_y = out_y_range % out_height
             # The "+ 0.5" is to get the latitude at the center of the pixel.
             # This also prevents abs(sin(lon)) from being 1.0, so in_x and in_y
             # are always in the range [0, out_height).
             lat = -math.pi * ((((out_y - eq_begin_y) + 0.5)/eq_size) -
-                             0.5) / scale
+                             0.5) / scale + c_lat
 
             # Convert from spherical coordinates to camera coordinates. The
             # sphere has radius one and it's centered at (0, 0, cam_sph_z) in
@@ -342,6 +350,7 @@ def update_scene():
     else:
         scale = 1.0
         ndc_inset = as_frac / 2.0
+    ndc_inset = 0 # Restore when center is working correctly.
 
 # Log a message to stdout if verbose.
 def verbose(msg):
