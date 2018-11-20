@@ -135,12 +135,12 @@ do
         cp -f "$tmp_dir/$((test_num - 1)).png" "$tmp_dir/$test_num.png"
     fi
 
-    eval echo "Test \#$test_num: $test"
+    eval echo "$test"
     if eval "$test" &> "$tmp_dir/$test_num.out"
     then
         if [[ -n $fail_expected ]]
         then
-            echo -e "Failed. Exit code unexpectedly non-zero.\n"
+            echo -e "Failed. Exit code unexpectedly zero.\n"
             let failures++
             continue
         fi
@@ -149,7 +149,7 @@ do
         then
             echo -e "Success. Exit code non-zero as expected.\n"
         else
-            echo -e "Failed. Exit code unexpectedly zero.\n"
+            echo -e "Failed. Exit code unexpectedly non-zero.\n"
             let failures++
         fi
         # An image is not expected in this case.
