@@ -241,6 +241,14 @@ def process_image(in_fname, out_fname):
             cam_x = cos(lat) * sin(lon)
             cam_y = sin(lat)
             cam_z = cam_sph_z + cos(lat) * cos(lon)
+
+            if c_lat:
+                # Rotate the unit sphere around the X-axis in order to bring
+                # the closest point to the camera up along the closest meridian
+                # to that latitude.
+                cam_y = cam_y*cos(lat) - cam_z*sin(lat)
+                cam_z = cam_z*cos(lat) + cam_y*sin(lat)
+
             if cam_z < min_z_ma:
                 # Not on the visible portion of the sphere.
                 continue
@@ -255,7 +263,6 @@ def process_image(in_fname, out_fname):
                 # Orthographic, simple case.
                 ndc_x = cam_x
                 ndc_y = cam_y
-
 
             # Convert from NDC coordinates to pixel coordinates. Note the "-"
             # for ndc_y since the Y-axis is the opposite direction for pixel
