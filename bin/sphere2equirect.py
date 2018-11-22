@@ -29,6 +29,7 @@ import sys
 
 from PIL import Image
 from math import radians, sin, pi, cos
+from wx._propgrid import new_LongStringProperty
 
 # Globals
 
@@ -218,15 +219,24 @@ def process_image(in_fname, out_fname):
     slp = slope
     c_lat = -radians(args.center_lat)
     c_lon = radians(args.center_lon)
+    
+    xxdebug_desc_max = 0.0
+    xxdebug_desc_total = 0.0
+    xxdebug_desc_count = 0
 
     # "2.0" (float) used to allow the center of the center pixel to be chosen
     # in the case where the height is odd.
     in_pix = in_im.load()
-    for out_x_range in range(eq_begin_x + inset, eq_end_x - inset):
-        out_x = out_x_range % out_width
+    for out_x in range(0, out_width):
         # The "+ 0.5" is to get the longitude at the center of the pixel.
         lon = math.pi * ((((out_x - eq_begin_x) + 0.5)/eq_size) -
                          0.5) / scale - c_lon
+        new_lon = 2 * math.pi * (((out_x + 0.5)/out_width) - 0.5) / scale - c_lon
+        xxdebug_desc = abs(lon - new_lon)
+        xxdebug_desc_count += 1
+        xxdebug_desc_total += xxdebug_desc
+        if xxdebug_desc > xxdebug_desc_max:
+            xxdebug_desc_max = xxdebug_desc
         for out_y_range in range(eq_begin_y + inset, eq_end_y - inset):
             out_y = out_y_range % out_height
             # The "+ 0.5" is to get the latitude at the center of the pixel.
@@ -317,6 +327,7 @@ def process_image(in_fname, out_fname):
 
                 color = in_pix[in_x, in_y]
             out_pix[out_x, out_y] = color
+    print("xxdebug_desc_max=", xxdebug_desc_max, "xxdebug_desc_avg=", xxdebug_desc_total / xxdebug_desc_count)
     out_im.save(out_fname)
 
 # Process the images.
