@@ -226,28 +226,32 @@ def process_image(in_fname, out_fname):
         out_x = out_x_range % out_width
         # The "+ 0.5" is to get the longitude at the center of the pixel.
         lon = math.pi * ((((out_x - eq_begin_x) + 0.5)/eq_size) -
-                         0.5) / scale + c_lon
+                         0.5) / scale - c_lon
         for out_y_range in range(eq_begin_y + inset, eq_end_y - inset):
             out_y = out_y_range % out_height
             # The "+ 0.5" is to get the latitude at the center of the pixel.
             # This also prevents abs(sin(lon)) from being 1.0, so in_x and in_y
             # are always in the range [0, out_height).
             lat = -math.pi * ((((out_y - eq_begin_y) + 0.5)/eq_size) -
-                             0.5) / scale + c_lat
+                             0.5) / scale
 
             # Convert from spherical coordinates to camera coordinates. The
             # sphere has radius one and it's centered at (0, 0, cam_sph_z) in
-            # the camera coordinate system. For orthographic cam_sph_z is 0.
+            # the camera coordinate system.
+            # TODO: Rename based on coordinate system.
             cam_x = cos(lat) * sin(lon)
             cam_y = sin(lat)
-            cam_z = cam_sph_z + cos(lat) * cos(lon)
+            cam_z = cos(lat) * cos(lon)
 
             if c_lat:
                 # Rotate the unit sphere around the X-axis in order to bring
                 # the closest point to the camera up along the closest meridian
                 # to that latitude.
-                cam_y = cam_y*cos(lat) - cam_z*sin(lat)
-                cam_z = cam_z*cos(lat) + cam_y*sin(lat)
+                cam_y = cam_y*cos(c_lat) - cam_z*sin(c_lat)
+                cam_z = cam_z*cos(c_lat) + cam_y*sin(c_lat)
+
+            # For orthographic cam_sph_z is 0.
+            cam_z += cam_sph_z
 
             if cam_z < min_z_ma:
                 # Not on the visible portion of the sphere.
@@ -270,6 +274,7 @@ def process_image(in_fname, out_fname):
             in_x = in_begin_x + in_size_2*(1 + ndc_x)
             in_y = in_begin_y + in_size_2*(1 - ndc_y)
 
+            color = (255, 0, 255) # Revert once center is debugged.
             if bl:
                 # Bilinear interpolation. This is a weighted average of the
                 # four surrounding pixels.
