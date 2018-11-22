@@ -69,10 +69,10 @@ def parse_args():
     parser.add_argument("--center-lon", type=float, default=0.0,
         help="The longitude at the center of the equirectangular output. "
            + "Helpful for --multi.")
+    parser.add_argument("--crop", action="store_true",
+        help="Crop the equirectangular image to written to pixels.")
     parser.add_argument("-f", "--force", action="store_true",
         help="Overwrite the output image.")
-    parser.add_argument("--full", action="store_true",
-        help="Full sized equirectangular image (2x1 instead of 1x1).")
     parser.add_argument("--height", type=int, default=0,
         help="Output height. Based on input image by default.")
     parser.add_argument("--in-begin-x", type=int,
@@ -147,19 +147,22 @@ def process_image(in_fname, out_fname):
         # Neither the width nor height was specified. Use the height of the
         # input image.
         out_height = in_size
-        out_width = 2 * in_size if args.full else in_size
+        out_width = 2 * in_size
     elif args.width and args.height:
         # Both  the height and width was specified, so use that.
         out_width = args.width
         out_height = args.height
+        if out_width != 2 * out_height:
+            fatal("The width must be exactly twice the height. Try specifying "
+                  + "only one of --width or --height, or neither.")
     elif args.width:
         # Width specified, but not height.
         out_width = args.width
-        out_height = out_width // 2 if args.full else out_width
+        out_height = out_width // 2
     else:
         # Height specified, but not width.
         out_height = args.height
-        out_width = 2 * out_height if args.full else out_height
+        out_width = 2 * out_height
 
     # Create the output image making use of the existing image if --multi was
     # specified.
@@ -219,24 +222,20 @@ def process_image(in_fname, out_fname):
     slp = slope
     c_lat = -radians(args.center_lat)
     c_lon = radians(args.center_lon)
-    
-    xxdebug_desc_max = 0.0
-    xxdebug_desc_total = 0.0
-    xxdebug_desc_count = 0
+    crop = args.crop
+
+    # Ranges that are needed when the image is cropped.
+    out_x_min = 9999999
+    out_x_max = 0
+    out_y_min = 9999999
+    out_y_max = 0
 
     # "2.0" (float) used to allow the center of the center pixel to be chosen
     # in the case where the height is odd.
     in_pix = in_im.load()
     for out_x in range(0, out_width):
         # The "+ 0.5" is to get the longitude at the center of the pixel.
-        lon = math.pi * ((((out_x - eq_begin_x) + 0.5)/eq_size) -
-                         0.5) / scale - c_lon
-        new_lon = 2 * math.pi * (((out_x + 0.5)/out_width) - 0.5) / scale - c_lon
-        xxdebug_desc = abs(lon - new_lon)
-        xxdebug_desc_count += 1
-        xxdebug_desc_total += xxdebug_desc
-        if xxdebug_desc > xxdebug_desc_max:
-            xxdebug_desc_max = xxdebug_desc
+        lon = 2 * math.pi * (((out_x + 0.5)/out_width) - 0.5) / scale - c_lon
         for out_y_range in range(eq_begin_y + inset, eq_end_y - inset):
             out_y = out_y_range % out_height
             # The "+ 0.5" is to get the latitude at the center of the pixel.
@@ -327,7 +326,21 @@ def process_image(in_fname, out_fname):
 
                 color = in_pix[in_x, in_y]
             out_pix[out_x, out_y] = color
-    print("xxdebug_desc_max=", xxdebug_desc_max, "xxdebug_desc_avg=", xxdebug_desc_total / xxdebug_desc_count)
+
+            # TODO: it should be possible to calculate the bounds
+            # programmatically in most cases.
+            if crop:
+                if out_x < out_x_min:
+                    out_x_min = out_x
+                elif out_x > out_x_max:
+                    out_x_max = out_x
+                if out_y < out_y_min:
+                    out_y_min = out_y
+                elif out_y > out_y_max:
+                    out_y_max = out_y
+
+    if crop:
+        out_im = out_im.crop((out_x_min, out_y_min, out_x_max + 1, out_y_max + 1))
     out_im.save(out_fname)
 
 # Process the images.
