@@ -38,7 +38,6 @@ args           = {} # Command line arguments.
 cam_sph_z      = 0  # Z-coordinate of the sphere.
 min_z          = 0  # Maximum Z-coordinate to render at tangent.
 min_z_ma       = 0  # Maximum Z-coordinate to render given --min-angle.
-ndc_inset      = 0  # Inset in NDC coordinates.
 scale          = 0  # Scale the output image by this amount.
 slope          = 0  # Maximum slope to render.
 
@@ -181,42 +180,6 @@ def process_image(in_fname, out_fname):
         out_im = Image.new("RGB", (out_width, out_height))
     out_pix = out_im.load()
 
-    # Determine the bounds of the equirectangular map region in the output
-    # image. If --stretch is not specified then this will be +- 90 degrees
-    # both dimensions.
-    if out_width >= out_height:
-        # The normal default cause as well as the --full case.
-        eq_size = out_height
-        eq_begin_x = int((out_width - out_height)/2)
-        eq_begin_y = 0
-    else:
-        # Unusual case.
-        eq_size = out_width
-        eq_begin_x = 0
-        eq_begin_y = int((out_height - out_width)/2)
-    eq_end_x = eq_begin_x + eq_size
-    eq_end_y = eq_begin_y + eq_size
-
-    # TODO: Offset really only works accurately for longitude. Latitude offset
-    # adds a lot of distortion, so it's probably only suitable for small
-    # corrections. This should be approached differently by rotating the unit
-    # sphere.
-    total_offset_x = int(round(eq_size*(args.offset_lon/180.0) +
-                               args.offset_x))
-    total_offset_y = int(round(eq_size*(-args.offset_lat/180.0) +
-                               args.offset_y))
-    eq_begin_x += total_offset_x
-    eq_begin_y += total_offset_y
-    eq_end_x += total_offset_x
-    eq_end_y += total_offset_y
-
-    # Determine the number of pixels that the writable region is inset in the
-    # equirectangular map. This is only non-zero if the --angular-size was
-    # specified, which means that less than a full hemisphere is visible.
-    # the image rendered pixels are not stretched to fill the equirectangular
-    # map region.
-    inset = int(ndc_inset * eq_size)
-
     # Avoid references to globals in the loop.
     bl = args.bilinear
     slp = slope
@@ -236,13 +199,11 @@ def process_image(in_fname, out_fname):
     for out_x in range(0, out_width):
         # The "+ 0.5" is to get the longitude at the center of the pixel.
         lon = 2 * math.pi * (((out_x + 0.5)/out_width) - 0.5) / scale - c_lon
-        for out_y_range in range(eq_begin_y + inset, eq_end_y - inset):
-            out_y = out_y_range % out_height
+        for out_y in range(0, out_height):
             # The "+ 0.5" is to get the latitude at the center of the pixel.
             # This also prevents abs(sin(lon)) from being 1.0, so in_x and in_y
             # are always in the range [0, out_height).
-            lat = -math.pi * ((((out_y - eq_begin_y) + 0.5)/eq_size) -
-                             0.5) / scale
+            lat = -math.pi * (((out_y + 0.5)/out_height) - 0.5) / scale
 
             # Convert from spherical coordinates to camera coordinates. The
             # sphere has radius one and it's centered at (0, 0, cam_sph_z) in
@@ -359,7 +320,6 @@ def update_scene():
     global cam_sph_z
     global min_z
     global min_z_ma
-    global ndc_inset
     global scale
     global slope
 
@@ -382,11 +342,8 @@ def update_scene():
     as_frac = as_rad_2_ma / (pi / 2.0) # Fraction of the way to 90 degrees.
     if args.stretch:
         scale = 1/(1 - as_frac)
-        ndc_inset = 0
     else:
         scale = 1.0
-        ndc_inset = as_frac / 2.0
-    ndc_inset = 0 # Restore when center is working correctly.
 
 # Log a message to stdout if verbose.
 def verbose(msg):
