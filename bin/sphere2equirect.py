@@ -29,7 +29,6 @@ import sys
 
 from PIL import Image
 from math import radians, sin, pi, cos
-from wx._propgrid import new_LongStringProperty
 
 # Globals
 
@@ -84,14 +83,6 @@ def parse_args():
         help="Minimum angle line of sight to sphere surface considered.")
     parser.add_argument("-m", "--multi", action="store_true",
         help="Write to the existing output image again.")
-    parser.add_argument("--offset-lat", type=float, default=0.0,
-        help="Offset output latitude by this amount. Helpful for --multi.")
-    parser.add_argument("--offset-lon", type=float, default=0.0,
-        help="Offset output longitude by this amount. Helpful for --multi.")
-    parser.add_argument("--offset-x", type=int, default=0,
-        help="Offset output X by this amount. Helpful for --multi.")
-    parser.add_argument("--offset-y", type=int, default=0,
-        help="Offset output Y by this amount. Helpful for --multi.")
     parser.add_argument("-o", "--output",
         help="Output filename. Default to adding \"-er\" to original name.")
     parser.add_argument("-s", "--stretch", action="store_true",
@@ -198,7 +189,7 @@ def process_image(in_fname, out_fname):
     in_pix = in_im.load()
     for out_x in range(0, out_width):
         # The "+ 0.5" is to get the longitude at the center of the pixel.
-        lon = 2 * math.pi * (((out_x + 0.5)/out_width) - 0.5) / scale - c_lon
+        lon = 2 * math.pi * (((out_x + 0.5)/out_width) - 0.5) / scale + c_lon
         for out_y in range(0, out_height):
             # The "+ 0.5" is to get the latitude at the center of the pixel.
             # This also prevents abs(sin(lon)) from being 1.0, so in_x and in_y

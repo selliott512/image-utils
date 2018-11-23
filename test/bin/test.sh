@@ -66,20 +66,21 @@ pass_tests=(
 
     # Part one of a full sized image that's the first image on the left, and
     # green on the right (but black on the right this part).
-    "$s2e -a 17.3843 --full --offset-lon -90 -bfo $tmp_dir/\$test_num.png \
+    "$s2e -a 17.3843 --center-lon 90 -bfo $tmp_dir/\$test_num.png \
         $test_data/in/earth.jpg"
 
     # Part two of a full sized image that's the first image on the left, and
     # green on the right. This is different than other tests in that it takes
     # the image created by the previous test as input.
-    "$s2e -a 17.3843 --multi --offset-lon 90 -bfo $tmp_dir/\$test_num.png \
+    "$s2e -a 17.3843 --multi --center-lon -90 -bfo $tmp_dir/\$test_num.png \
         $test_data/in/green.png"
 
-    # Attempt test #3 with offsets. Latitude offset is accurate for any
-    # amount, so 180 degrees is fine. Latitude is not accurate and adds
-    # distortion.
+    # Attempt test #3 centered over Austin Texas (30.3 N 97.7 W). Note the
+	# earth.jpg was centered over 0 N 90 W, which is why -7.7 is specified for
+    # the longitude.
+    # TODO: It looks like it's centered below Austin.
     "$s2e -a 17.3843 -a 17.3843 --in-begin-x 1 --in-begin-y 1 --in-size 238 \
-        --full --center-lat 10 --offset-lon 180 -bfo $tmp_dir/\$test_num.png \
+        --center-lat 30.3 --center-lon -7.7 -bfo $tmp_dir/\$test_num.png \
         $test_data/in/earth.jpg" )
 
 # Tests that are expected have a non-zero exit.
