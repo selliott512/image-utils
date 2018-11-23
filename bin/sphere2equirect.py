@@ -174,7 +174,7 @@ def process_image(in_fname, out_fname):
     # Avoid references to globals in the loop.
     bl = args.bilinear
     slp = slope
-    c_lat = -radians(args.center_lat)
+    c_lat = radians(args.center_lat)
     c_lon = radians(args.center_lon)
     crop = args.crop
 
@@ -189,7 +189,7 @@ def process_image(in_fname, out_fname):
     in_pix = in_im.load()
     for out_x in range(0, out_width):
         # The "+ 0.5" is to get the longitude at the center of the pixel.
-        lon = 2 * math.pi * (((out_x + 0.5)/out_width) - 0.5) / scale + c_lon
+        lon = 2 * math.pi * (((out_x + 0.5)/out_width) - 0.5) / scale - c_lon
         for out_y in range(0, out_height):
             # The "+ 0.5" is to get the latitude at the center of the pixel.
             # This also prevents abs(sin(lon)) from being 1.0, so in_x and in_y
@@ -208,8 +208,9 @@ def process_image(in_fname, out_fname):
                 # Rotate the unit sphere around the X-axis in order to bring
                 # the closest point to the camera up along the closest meridian
                 # to that latitude.
-                cam_y = cam_y*cos(c_lat) - cam_z*sin(c_lat)
+                new_cam_y = cam_y*cos(c_lat) - cam_z*sin(c_lat)
                 cam_z = cam_z*cos(c_lat) + cam_y*sin(c_lat)
+                cam_y = new_cam_y
 
             # For orthographic cam_sph_z is 0.
             cam_z += cam_sph_z
@@ -275,8 +276,8 @@ def process_image(in_fname, out_fname):
                 # Nearest interpolation. This []s implicitly floor the values,
                 # which helpful since each rectangular pixel region is labeled
                 # by it's lowest X and Y coordinates.
-
                 color = in_pix[in_x, in_y]
+
             out_pix[out_x, out_y] = color
 
             # TODO: it should be possible to calculate the bounds
