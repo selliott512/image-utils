@@ -103,7 +103,14 @@ pass_tests=(
 
     # The Chicago test, but with transparent hidden pixels.
     "$s2e --center-lat 41.8781 --center-lon -87.6298 --hidden-color trans \
-        -fo $tmp_dir/\$test_num.png $test_data/in/chicago-small.png" )
+        -fo $tmp_dir/\$test_num.png $test_data/in/chicago-small.png"
+
+    # The green circle cropped. Since the output is square no hidden (black)
+    # pixels remain.
+    "$s2e --crop -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
+
+    # The second test, but cropped.
+    "$s2e -a 17.3843 --crop -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg" )
 
 # Tests that are expected have a non-zero exit.
 fail_tests=(
