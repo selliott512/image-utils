@@ -62,10 +62,10 @@ def parse_args():
     parser.add_argument("-b", "--bilinear", action="store_true",
         help="Use bilinear interpolation instead of nearest.")
     parser.add_argument("--center-lat", type=float, default=0.0,
-        help="The latitude at the center of the equirectangular output. "
+        help="The latitude at the center of the spherical input. "
            + "Helpful for --multi.")
     parser.add_argument("--center-lon", type=float, default=0.0,
-        help="The longitude at the center of the equirectangular output. "
+        help="The longitude at the center of the spherical input. "
            + "Helpful for --multi.")
     parser.add_argument("--crop", action="store_true",
         help="Crop the equirectangular image to written to pixels.")
@@ -85,6 +85,8 @@ def parse_args():
         help="Write to the existing output image again.")
     parser.add_argument("-o", "--output",
         help="Output filename. Default to adding \"-er\" to original name.")
+    parser.add_argument("--rotate", type=float, default=0.0,
+        help="The degrees the spherical input is rotated clockwise.")
     parser.add_argument("-s", "--stretch", action="store_true",
         help="Stretch to fill the equirectangular map region.")
     parser.add_argument("-v", "--verbose", action="store_true",
@@ -177,6 +179,7 @@ def process_image(in_fname, out_fname):
     c_lat = radians(args.center_lat)
     c_lon = radians(args.center_lon)
     crop = args.crop
+    rotate = radians(args.rotate)
 
     # Ranges that are needed when the image is cropped.
     out_x_min = 9999999
@@ -211,6 +214,13 @@ def process_image(in_fname, out_fname):
                 new_cam_y = cam_y*cos(c_lat) - cam_z*sin(c_lat)
                 cam_z = cam_z*cos(c_lat) + cam_y*sin(c_lat)
                 cam_y = new_cam_y
+                
+            if rotate:
+                # Rotate around the Z-axis. Note that the rotation is
+                # clockwise, so the signs are flipped.
+                new_cam_x = cam_x*cos(rotate) + cam_y*sin(rotate);
+                cam_y = cam_y*cos(rotate) - cam_x*sin(rotate)
+                cam_x = new_cam_x
 
             # For orthographic cam_sph_z is 0.
             cam_z += cam_sph_z
