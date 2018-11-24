@@ -24,7 +24,6 @@ from __future__ import print_function
 
 import argparse
 import os
-import math
 import sys
 
 from PIL import Image
@@ -35,9 +34,7 @@ from math import radians, sin, pi, cos
 as_rad         = 0  # --angular-size in radians.
 args           = {} # Command line arguments.
 cam_sph_z      = 0  # Z-coordinate of the sphere.
-min_z          = 0  # Maximum Z-coordinate to render at tangent.
 min_z_ma       = 0  # Maximum Z-coordinate to render given --min-angle.
-scale          = 0  # Scale the output image by this amount.
 slope          = 0  # Maximum slope to render.
 
 # Functions
@@ -89,8 +86,6 @@ def parse_args():
         help="Output filename. Default to adding \"-er\" to original name.")
     parser.add_argument("--rotate", type=float, default=0.0,
         help="The degrees the spherical input is rotated clockwise.")
-    parser.add_argument("-s", "--stretch", action="store_true",
-        help="Stretch to fill the equirectangular map region.")
     parser.add_argument("-v", "--verbose", action="store_true",
         help="Verbose.")
     parser.add_argument("-w", "--width", type=int, default=0,
@@ -203,20 +198,22 @@ def process_image(in_fname, out_fname):
     in_pix = in_im.load()
     for out_x in range(0, out_width):
         # The "+ 0.5" is to get the longitude at the center of the pixel.
-        lon = 2 * math.pi * (((out_x + 0.5)/out_width) - 0.5) / scale - c_lon
+        lon = 2 * pi * (((out_x + 0.5)/out_width) - 0.5) - c_lon
         for out_y in range(0, out_height):
             # The "+ 0.5" is to get the latitude at the center of the pixel.
             # This also prevents abs(sin(lon)) from being 1.0, so in_x and in_y
             # are always in the range [0, out_height).
-            lat = -math.pi * (((out_y + 0.5)/out_height) - 0.5) / scale
+            lat = -pi * (((out_y + 0.5)/out_height) - 0.5)
 
             # Convert from spherical coordinates to camera coordinates. The
             # sphere has radius one and it's centered at (0, 0, cam_sph_z) in
             # the camera coordinate system.
-            # TODO: Rename based on coordinate system.
             cam_x = cos(lat) * sin(lon)
             cam_y = sin(lat)
             cam_z = cos(lat) * cos(lon)
+
+            # Technically the cam_* variables are world coordinates at this
+            # point, but they'll be updated to camera coordinates.
 
             if c_lat:
                 # Rotate the unit sphere around the X-axis in order to bring
@@ -233,7 +230,8 @@ def process_image(in_fname, out_fname):
                 cam_y = cam_y*cos(rotate) - cam_x*sin(rotate)
                 cam_x = new_cam_x
 
-            # For orthographic cam_sph_z is 0.
+            # For orthographic cam_sph_z is 0. This finishes the conversion
+            # from world coordinates to camera coordinates.
             cam_z += cam_sph_z
 
             if cam_z < min_z_ma:
@@ -331,9 +329,7 @@ def process_images():
 def update_scene():
     global as_rad
     global cam_sph_z
-    global min_z
     global min_z_ma
-    global scale
     global slope
 
     # Calculate maximum angle between the line of sight (Z-axis) and a
@@ -352,11 +348,6 @@ def update_scene():
         slope = -max_xy/min_z
     else:
         min_z_ma = min_z_rel_ma
-    as_frac = as_rad_2_ma / (pi / 2.0) # Fraction of the way to 90 degrees.
-    if args.stretch:
-        scale = 1/(1 - as_frac)
-    else:
-        scale = 1.0
 
 # Log a message to stdout if verbose.
 def verbose(msg):
