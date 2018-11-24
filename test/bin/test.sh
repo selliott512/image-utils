@@ -80,22 +80,30 @@ pass_tests=(
     # the equirectangular output into G.Projector and verifying that the
     # overlay is aligned.
     "$s2e --center-lat 41.8781 --center-lon -87.6298 -fo $tmp_dir/\$test_num.png \
-        $test_data/in/chicago-small.png" 
-        
+        $test_data/in/chicago-small.png"
+
     # Process an orthographic image centered over Melbourne Australia.
     # See the previous test comment.
     "$s2e --center-lat -37.8136 --center-lon 144.9631 -fo $tmp_dir/\$test_num.png \
         $test_data/in/melbourne-small.png"
-        
+
     # Like the Chicago test except the input image is rotated 45 degrees
     # clockwise.
     "$s2e --center-lat 41.8781 --center-lon -87.6298 --rotate 45 \
-        -fo $tmp_dir/\$test_num.png $test_data/in/chicago-small-rotate-45.png" 
-        
+        -fo $tmp_dir/\$test_num.png $test_data/in/chicago-small-rotate-45.png"
+
     # Like the Melbourne test except the input image is rotated -123 degrees
     # clockwise.
     "$s2e --center-lat -37.8136 --center-lon 144.9631 --rotate -123 \
-        -fo $tmp_dir/\$test_num.png $test_data/in/melbourne-small-rotate--123.png" )
+        -fo $tmp_dir/\$test_num.png $test_data/in/melbourne-small-rotate--123.png"
+
+    # The Chicago test, but with magenta hidden pixels.
+    "$s2e --center-lat 41.8781 --center-lon -87.6298 --hidden-color magenta \
+        -fo $tmp_dir/\$test_num.png $test_data/in/chicago-small.png"
+
+    # The Chicago test, but with transparent hidden pixels.
+    "$s2e --center-lat 41.8781 --center-lon -87.6298 --hidden-color trans \
+        -fo $tmp_dir/\$test_num.png $test_data/in/chicago-small.png" )
 
 # Tests that are expected have a non-zero exit.
 fail_tests=(

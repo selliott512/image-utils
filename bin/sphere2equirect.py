@@ -73,6 +73,8 @@ def parse_args():
         help="Overwrite the output image.")
     parser.add_argument("--height", type=int, default=0,
         help="Output height. Based on input image by default.")
+    parser.add_argument("--hidden-color", type=str, default="black",
+        help="Color to use for hidden pixels.")
     parser.add_argument("--in-begin-x", type=int,
         help="X-coordinate of where the sphere begins in the input.")
     parser.add_argument("--in-begin-y", type=int,
@@ -170,7 +172,16 @@ def process_image(in_fname, out_fname):
             fatal("Output image file \"" + out_fname + "\" exists, but "
                   + "neither --multi nor --force was specified")
     if not out_im:
-        out_im = Image.new("RGB", (out_width, out_height))
+        if args.hidden_color.lower().startswith("trans"):
+            # Color "trans" or "transparent' is a special case. It means an
+            # alpha channel is needed, and the hidden pixels are to be
+            # transparent.
+            mode = "RGBA"
+            color = (0, 0, 0, 0)
+        else:
+            mode = "RGB"
+            color = args.hidden_color
+        out_im = Image.new(mode, (out_width, out_height), color)
     out_pix = out_im.load()
 
     # Avoid references to globals in the loop.
@@ -214,7 +225,7 @@ def process_image(in_fname, out_fname):
                 new_cam_y = cam_y*cos(c_lat) - cam_z*sin(c_lat)
                 cam_z = cam_z*cos(c_lat) + cam_y*sin(c_lat)
                 cam_y = new_cam_y
-                
+
             if rotate:
                 # Rotate around the Z-axis. Note that the rotation is
                 # clockwise, so the signs are flipped.
