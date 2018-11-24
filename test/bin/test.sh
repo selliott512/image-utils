@@ -33,15 +33,15 @@ s2e="$root/bin/sphere2equirect.py"
 # Tests that are expected have a zero exit, and produce an exact output image.
 pass_tests=(
     # Try with bilinear (-b).
-    "$s2e -a 17.3843 -bfo $tmp_dir/\$test_num.png $test_data/in/earth.jpg"
+    "$s2e -a 17.3843 -bfo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
     # Above non-bilinear. This is faster, but more aliasing.
-    "$s2e -a 17.3843  -fo $tmp_dir/\$test_num.png $test_data/in/earth.jpg"
+    "$s2e -a 17.3843  -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
     # Same as the above, but select exactly the sphere in the input image.
-    # This is the most correct usage for earth.jpg in this test.
+    # This is the most correct usage for 90w-small.jpg in this test.
     "$s2e -a 17.3843 --in-begin-x  1 --in-begin-y  1 --in-size 238 \
-        -fo $tmp_dir/\$test_num.png $test_data/in/earth.jpg"
+        -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
     # A green circle. It gets a few white pixels in a symmetrical way.
     "$s2e             -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
@@ -67,7 +67,7 @@ pass_tests=(
     # Part one of a full sized image that's the first image on the left, and
     # green on the right (but black on the right this part).
     "$s2e -a 17.3843 --center-lon -90 -bfo $tmp_dir/\$test_num.png \
-        $test_data/in/earth.jpg"
+        $test_data/in/90w-small.jpg"
 
     # Part two of a full sized image that's the first image on the left, and
     # green on the right. This is different than other tests in that it takes
@@ -75,12 +75,17 @@ pass_tests=(
     "$s2e -a 17.3843 --multi --center-lon 90 -bfo $tmp_dir/\$test_num.png \
         $test_data/in/green.png"
 
-    # Import an orthographic image centered over Chicago IL. Since the input
+    # Process an orthographic image centered over Chicago IL. Since the input
     # image was produced by G.Projector this image can be verified by importing
     # the equirectangular output into G.Projector and verifying that the
     # overlay is aligned.
     "$s2e --center-lat 41.8781 --center-lon -87.6298 -fo $tmp_dir/\$test_num.png \
-        $test_data/in/chicago-small.png" )
+        $test_data/in/chicago-small.png" 
+        
+    # Process an orthographic image centered over Melbourne Australia.
+    # See the previous test comment.
+    "$s2e --center-lat -37.8136 --center-lon 144.9631 -fo $tmp_dir/\$test_num.png \
+        $test_data/in/melbourne-small.png" )
 
 # Tests that are expected have a non-zero exit.
 fail_tests=(
@@ -98,7 +103,7 @@ fail_tests=(
 pass_slow_tests=(
     # A large version of test #3 with bilinear.
     "$s2e -a 17.3843 --in-begin-x 7 --in-begin-y 7 --in-size 2044 \
-        -bfo $tmp_dir/\$test_num.png $test_data/in/big-earth.jpg" )
+        -bfo $tmp_dir/\$test_num.png $test_data/in/90w-big.jpg" )
 
 ### Main ###
 
