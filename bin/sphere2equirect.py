@@ -131,6 +131,10 @@ def process_image(in_fname, out_fname):
     in_end_x = in_begin_x + in_size
     in_end_y = in_begin_y + in_size
 
+    verbose(("Input \"%s\" is [%d, %d] (inclusive) to (%d, %d) (exclusive) "
+             + "with size %d.") % (in_fname, in_begin_x, in_begin_y,
+                                  in_end_x, in_end_y, in_size))
+
     if max(in_end_x, in_end_y) > min_in:
         fatal("For input image \"" + in_fname + "\" the region specified "
                 + "won't fit into " + str(min_in) + " pixels. Try "
@@ -182,6 +186,8 @@ def process_image(in_fname, out_fname):
             color = args.hidden_color
         out_im = Image.new(mode, (out_width, out_height), color)
     out_pix = out_im.load()
+
+    verbose("Output \"%s\" is %dx%d." % (out_fname, out_width, out_height))
 
     # Avoid references to globals in the loop.
     bl = args.bilinear
@@ -252,6 +258,12 @@ def process_image(in_fname, out_fname):
                 # Orthographic, simple case.
                 ndc_x = cam_x
                 ndc_y = cam_y
+
+            # Assure that ndc_* fall in range [0, 1).
+            if ndc_x >= 1.0:
+                ndc_x = 0.9999999
+            if ndc_y >= 1.0:
+                ndc_y = 0.9999999
 
             # Convert from NDC coordinates to pixel coordinates. Note the "-"
             # for ndc_y since the Y-axis is the opposite direction for pixel
