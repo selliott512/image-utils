@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# wad2image - Create equirectangular images from sphere images
+# sphere2equirect.py - Create equirectangular images from sphere images
 # Copyright (C)2018S Steven Elliott
 #
 # This program is free software; you can redistribute it and/or
@@ -263,19 +263,23 @@ def process_image(in_fname, out_fname):
                 # Bilinear interpolation. This is a weighted average of the
                 # four surrounding pixels.
 
-                # Get the surrounding pixels clipped into bounds.
+                # Get X and Y coordinates of the four surrounding pixels
+                # clipped into bounds. "l" is low (just below in_*), "h" is
+                # high # (just above in_*).
                 l_x = in_x - 0.5 if (in_x - 0.5) >= in_begin_x else in_begin_x
                 h_x = in_x + 0.5 if (in_x + 0.5) < in_end_x else in_end_x - 1
                 l_y = in_y - 0.5 if (in_y - 0.5) >= in_begin_y else in_begin_y
                 h_y = in_y + 0.5 if (in_y + 0.5) < in_end_y else in_end_y - 1
 
-                # The colors surrounding in_x and in_y
+                # The colors surrounding location (in_x, in_y).
                 color_ll = in_pix[l_x, l_y]
                 color_lh = in_pix[l_x, h_y]
                 color_hl = in_pix[h_x, l_y]
                 color_hh = in_pix[h_x, h_y]
 
-                # The fraction of the way from the low color to the high color.
+                # The fraction of the way from the low color to the high
+                # color. "l" is the distance from the low color to in_* and
+                # "h" is the distance from in_* to the high color.
                 frac_l_x = (in_x + 0.5) % 1.0
                 frac_l_y = (in_x + 0.5) % 1.0
                 frac_h_x = 1.0 - frac_l_x
@@ -315,6 +319,8 @@ def process_image(in_fname, out_fname):
                     out_y_max = out_y
 
     if crop:
+        # For crop the lower bound is inclusive and the upper bound is
+        # exclusive, so the "+ 1" for the upper bound.
         out_im = out_im.crop((out_x_min, out_y_min, out_x_max + 1, out_y_max + 1))
     out_im.save(out_fname)
 
