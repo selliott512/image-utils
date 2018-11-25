@@ -127,7 +127,11 @@ def process_image(in_fname, out_fname):
     else:
         in_begin_y = args.in_begin_y
 
-    if max(in_begin_x, in_begin_y) + in_size > min_in:
+    # in_begin_* is inclusive and in_end_* is exclusive.
+    in_end_x = in_begin_x + in_size
+    in_end_y = in_begin_y + in_size
+
+    if max(in_end_x, in_end_y) > min_in:
         fatal("For input image \"" + in_fname + "\" the region specified "
                 + "won't fit into " + str(min_in) + " pixels. Try "
                 + "specifying --in-size, or a lower value for it.")
@@ -255,16 +259,15 @@ def process_image(in_fname, out_fname):
             in_x = in_begin_x + in_size_2*(1 + ndc_x)
             in_y = in_begin_y + in_size_2*(1 - ndc_y)
 
-            color = (255, 0, 255) # Revert once center is debugged.
             if bl:
                 # Bilinear interpolation. This is a weighted average of the
                 # four surrounding pixels.
 
                 # Get the surrounding pixels clipped into bounds.
-                l_x = in_x - 0.5 if (in_x - 0.5) >= 0.0 else 0.0
-                h_x = in_x + 0.5 if (in_x + 0.5) < in_height else in_height - 1.0
-                l_y = in_y - 0.5 if (in_y - 0.5) >= 0.0 else 0.0
-                h_y = in_y + 0.5 if (in_y + 0.5) < in_height else in_height - 1.0
+                l_x = in_x - 0.5 if (in_x - 0.5) >= in_begin_x else in_begin_x
+                h_x = in_x + 0.5 if (in_x + 0.5) < in_end_x else in_end_x - 1
+                l_y = in_y - 0.5 if (in_y - 0.5) >= in_begin_y else in_begin_y
+                h_y = in_y + 0.5 if (in_y + 0.5) < in_end_y else in_end_y - 1
 
                 # The colors surrounding in_x and in_y
                 color_ll = in_pix[l_x, l_y]
