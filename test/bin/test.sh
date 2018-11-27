@@ -28,6 +28,11 @@ tmp_dir="/tmp/image-utils-$bname.$$" # Temp directory
 # Scripts to test.
 s2e="$root/bin/sphere2equirect.py"
 
+# TODO: Comparing PNG files with "diff" is probably not robust. Find a way of
+# converting the PNGs to a canonical format by stripping comments and other
+# extraneous chunks, turning off compression, or maybe convert to a simpler
+# image format such as PPM.
+
 # Tests
 
 # Tests that are expected have a zero exit, and produce an exact output image.

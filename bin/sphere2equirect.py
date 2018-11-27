@@ -27,12 +27,12 @@ import os
 import sys
 
 from PIL import Image
-from math import radians, sin, pi, cos
+from math import cos, pi, radians, sin
 
 # Globals
 
-as_rad         = 0  # --angular-size in radians.
 args           = {} # Command line arguments.
+as_rad         = 0  # --angular-size in radians.
 cam_sph_z      = 0  # Z-coordinate of the sphere.
 min_z_ma       = 0  # Maximum Z-coordinate to render given --min-angle.
 slope          = 0  # Maximum slope to render.
@@ -41,7 +41,8 @@ slope          = 0  # Maximum slope to render.
 
 # Write a fatal error message to stderr and exit.
 def fatal(msg):
-    warn(msg)
+    print(msg, file=sys.stderr)
+    sys.stderr.flush()
     sys.exit(1)
 
 # Parse the command line arguments and store the result in 'args'.
@@ -59,39 +60,53 @@ def parse_args():
     parser.add_argument("-b", "--bilinear", action="store_true",
         help="Use bilinear interpolation instead of nearest.")
     parser.add_argument("--center-lat", type=float, default=0.0,
-        help="The latitude at the center of the spherical input. "
+        help="The latitude at the center of the sphere in the input image. "
            + "Helpful for --multi.")
     parser.add_argument("--center-lon", type=float, default=0.0,
-        help="The longitude at the center of the spherical input. "
+        help="The longitude at the center of the sphere in the input image. "
            + "Helpful for --multi.")
-    parser.add_argument("--crop", action="store_true",
-        help="Crop the equirectangular image to written to pixels.")
+    parser.add_argument("-c", "--crop", action="store_true",
+        help="Crop the output image to the smallest rectangle possible such "
+           + "that only hidden pixels are removed.")
     parser.add_argument("-f", "--force", action="store_true",
         help="Overwrite the output image.")
     parser.add_argument("--height", type=int, default=0,
-        help="Output height. Based on input image by default.")
+        help="Output image height. Based on the input image by default.")
     parser.add_argument("--hidden-color", type=str, default="black",
-        help="Color to use for hidden pixels.")
-    parser.add_argument("--in-begin-x", type=int,
-        help="X-coordinate of where the sphere begins in the input.")
-    parser.add_argument("--in-begin-y", type=int,
-        help="Y-coordinate of where the sphere begins in the input.")
-    parser.add_argument("--in-size", type=int,
-        help="Size of the sphere in the input. Default is fit to input.")
+        help="Color to use for hidden pixels. Hidden pixels are pixels in the "
+           + "output image that correspond to locations on the sphere in the "
+           + "input image that are not visible to the camera.")
+    parser.add_argument("-x", "--in-begin-x", type=int,
+        help="X-coordinate of where the sphere begins in the input image.")
+    parser.add_argument("-y", "--in-begin-y", type=int,
+        help="Y-coordinate of where the sphere begins in the input image.")
+    parser.add_argument("-s", "--in-size", type=int,
+        help="Size (width or diameter) of the sphere in the input image. "
+           + "Default is the largest size that will fit in the input image.")
     parser.add_argument("--min-angle", type=float, default=0.0,
-        help="Minimum angle line of sight to sphere surface considered.")
+        help="Minimum angle between line of sight and the surface of the "
+           + "sphere. Pixels less than this will be hidden. Helpful when the "
+           + "perimeter of the sphere is distorted.")
     parser.add_argument("-m", "--multi", action="store_true",
-        help="Write to the existing output image again.")
+        help="Multiple write. If there is an existing image at the output "
+           + "location then open it for write. This is helpful when "
+           + "producing a map from multiple input images where each input "
+           + "image is a portion of the entire sphere.")
     parser.add_argument("-o", "--output",
-        help="Output filename. Default to adding \"-er\" to original name.")
-    parser.add_argument("--rotate", type=float, default=0.0,
-        help="The degrees the spherical input is rotated clockwise.")
+        help="Output filename. Default to adding \"-er\" to the basename "
+           + "(before the extension) of the original filename.")
+    parser.add_argument("-q", "--quiet", action="store_true",
+        help="Quiet. Suppress output (warnings).")
+    parser.add_argument("-r", "--rotate", type=float, default=0.0,
+        help="Number of degrees the sphere in the input image is rotated "
+           + "clockwise. The North pole at the top of the sphere is zero "
+           + "degrees of rotation.")
     parser.add_argument("-v", "--verbose", action="store_true",
-        help="Verbose.")
+        help="Verbose. Additional output.")
     parser.add_argument("-w", "--width", type=int, default=0,
-        help="Output width. Based on input image by default.")
+        help="Output image width. Based on the input image by default.")
     parser.add_argument("images", metavar="IMAGE", nargs="+",
-        help="Input spherical images.")
+        help="Sphere input images.")
 
     args = parser.parse_args()
 
@@ -107,6 +122,9 @@ def process_image(in_fname, out_fname):
     verbose("Processing input image \"" + in_fname + "\" to output image \""
             + out_fname + "\".")
 
+    if not os.path.isfile(in_fname):
+        fatal("Input image \"" + in_fname + "\" does not exist.")
+
     in_im = Image.open(in_fname)
     in_width, in_height = in_im.size
 
@@ -118,12 +136,12 @@ def process_image(in_fname, out_fname):
     in_size_2 = in_size / 2.0
 
     if args.in_begin_x is None:
-        in_begin_x = int((min_in - in_size) / 2)
+        in_begin_x = (min_in - in_size) // 2
     else:
         in_begin_x = args.in_begin_x
 
     if args.in_begin_y is None:
-        in_begin_y = int((min_in - in_size) / 2)
+        in_begin_y = (min_in - in_size) // 2
     else:
         in_begin_y = args.in_begin_y
 
@@ -170,7 +188,15 @@ def process_image(in_fname, out_fname):
             # Override out_width and out_height with the the values actually
             # used. Perhaps this should be a warning if either --width or
             # --height was specified.
+            out_width_old = out_width
+            out_height_old = out_height
             out_width, out_height = out_im.size
+            if (out_width_old  and (out_width_old  != out_width)) or \
+               (out_height_old and (out_height_old != out_height)):
+                warn("With --multi either the height or width specified does "
+                        + "not match existing output image \"" + out_fname
+                        + "\". Existing output image dimensions will be used "
+                        + "instead.")
         elif not args.force:
             fatal("Output image file \"" + out_fname + "\" exists, but "
                   + "neither --multi nor --force was specified")
@@ -184,7 +210,13 @@ def process_image(in_fname, out_fname):
         else:
             mode = "RGB"
             color = args.hidden_color
-        out_im = Image.new(mode, (out_width, out_height), color)
+        try:
+            out_im = Image.new(mode, (out_width, out_height), color)
+        except ValueError as err:
+            if "unknown color specifier" in str(err):
+                fatal("Hidden color \"" + color + "\" is not supported.")
+            else:
+                raise err
     out_pix = out_im.load()
 
     verbose("Output \"%s\" is %dx%d." % (out_fname, out_width, out_height))
@@ -333,6 +365,11 @@ def process_image(in_fname, out_fname):
     if crop:
         # For crop the lower bound is inclusive and the upper bound is
         # exclusive, so the "+ 1" for the upper bound.
+        verbose(("Output \"%s\" cropped from [%d, %d] (inclusive) to (%d, %d) "
+                + "(exclusive) for a new size of %dx%d.") % (
+                    out_fname, out_x_min, out_y_min, out_x_max + 1,
+                    out_y_max + 1, out_x_max + 1 - out_x_min,
+                    out_x_max + 1 - out_x_min))
         out_im = out_im.crop((out_x_min, out_y_min, out_x_max + 1, out_y_max + 1))
     out_im.save(out_fname)
 
@@ -377,6 +414,8 @@ def verbose(msg):
 
 # Print a warning to stderr. It's flushed.
 def warn(msg):
+    if args.quiet:
+        return
     print(msg, file=sys.stderr)
     sys.stderr.flush()
 
