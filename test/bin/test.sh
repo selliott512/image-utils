@@ -115,7 +115,18 @@ pass_tests=(
     "$s2e --crop -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
 
     # The second test, but cropped.
-    "$s2e -a 17.3843 --crop -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg" )
+    "$s2e -a 17.3843 --crop -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
+
+	# The third test, but specify the end instead of the beginning. This should
+	# produce the same output as the third test.
+    "$s2e -a 17.3843 --in-end-x 239 --in-end-y 239 --in-size 238 \
+        -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
+
+	# The third test, but specify beginning and end instead of the size. This
+	# should produce the same output as the third test.
+    "$s2e -a 17.3843 --in-begin-x 1 --in-begin-y 1 \
+                     --in-end-x 239 --in-end-y 239 \
+        -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg" )
 
 # Tests that are expected have a non-zero exit.
 fail_tests=(

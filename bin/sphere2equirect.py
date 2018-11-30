@@ -77,9 +77,17 @@ def parse_args():
            + "output image that correspond to locations on the sphere in the "
            + "input image that are not visible to the camera.")
     parser.add_argument("-x", "--in-begin-x", type=int,
-        help="X-coordinate of where the sphere begins in the input image.")
+        help="X-coordinate of where the sphere begins in the input image "
+           + "(inclusive).")
     parser.add_argument("-y", "--in-begin-y", type=int,
-        help="Y-coordinate of where the sphere begins in the input image.")
+        help="Y-coordinate of where the sphere begins in the input image "
+           + "(inclusive).")
+    parser.add_argument("--in-end-x", type=int,
+        help="X-coordinate of where the sphere ends in the input image "
+           + "(exclusive).")
+    parser.add_argument("--in-end-y", type=int,
+        help="Y-coordinate of where the sphere ends in the input image "
+           + "(exclusive).")
     parser.add_argument("-s", "--in-size", type=int,
         help="Size (width or diameter) of the sphere in the input image. "
            + "Default is the largest size that will fit in the input image.")
@@ -129,25 +137,60 @@ def process_image(in_fname, out_fname):
     in_width, in_height = in_im.size
 
     min_in = min(in_width, in_height)
+
+    # The result of the following is that in_size will be known whether it is
+    # given explicitly or calculated, and the begin, end and --in-size options
+    # will all be guaranteed to be consisted.
+    in_size = None
+    calc_in_size = None
+    in_begin_x = None
+    in_begin_y = None
+    in_end_x = None
+    in_end_y = None
     if args.in_size:
         in_size = args.in_size
-    else:
+    if args.in_begin_x is not None and args.in_end_x is not None:
+        calc_in_size = args.in_end_x - args.in_begin_x
+        if in_size is not None and calc_in_size != in_size:
+            fatal("X begin and end specified does not match the size "
+                  + str(in_size) + "specified.")
+        in_size = calc_in_size
+        in_begin_x = args.in_begin_x
+        in_end_x = args.in_end_x
+    if args.in_begin_y is not None and args.in_end_y is not None:
+        calc_in_size = args.in_end_y - args.in_begin_y
+        if in_size is not None and calc_in_size != in_size:
+            fatal("Y begin and end specified does not match the size "
+                  + str(in_size) + "specified.")
+        in_size = calc_in_size
+        in_begin_y = args.in_begin_y
+        in_end_y = args.in_end_y
+    if in_size is None:
         in_size = min_in
     in_size_2 = in_size / 2.0
 
-    if args.in_begin_x is None:
-        in_begin_x = (min_in - in_size) // 2
-    else:
+    # Now that the is known the ranges can be calculated regardless of what was
+    # specified.
+
+    if args.in_begin_x is not None and args.in_end_x is None:
         in_begin_x = args.in_begin_x
+        in_end_x = in_begin_x + in_size
+    elif args.in_begin_x is None and args.in_end_x is not None:
+        in_end_x = args.in_end_x
+        in_begin_x = in_end_x - in_size
+    elif args.in_begin_x is None and args.in_end_x is None:
+        in_begin_x = (min_in - in_size) // 2
+        in_end_x = in_begin_x + in_size
 
-    if args.in_begin_y is None:
-        in_begin_y = (min_in - in_size) // 2
-    else:
+    if args.in_begin_y is not None and args.in_end_y is None:
         in_begin_y = args.in_begin_y
-
-    # in_begin_* is inclusive and in_end_* is exclusive.
-    in_end_x = in_begin_x + in_size
-    in_end_y = in_begin_y + in_size
+        in_end_y = in_begin_y + in_size
+    elif args.in_begin_y is None and args.in_end_y is not None:
+        in_end_y = args.in_end_y
+        in_begin_y = in_end_y - in_size
+    elif args.in_begin_y is None and args.in_end_y is None:
+        in_begin_y = (min_in - in_size) // 2
+        in_end_y = in_begin_y + in_size
 
     verbose(("Input \"%s\" is [%d, %d] (inclusive) to (%d, %d) (exclusive) "
              + "with size %d.") % (in_fname, in_begin_x, in_begin_y,
