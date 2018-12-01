@@ -46,8 +46,10 @@ usage: sphere2equirect.py [-h] [-a ANGULAR_SIZE] [-b]
                           [--center-lat CENTER_LAT] [--center-lon CENTER_LON]
                           [-c] [-f] [--height HEIGHT]
                           [--hidden-color HIDDEN_COLOR] [-x IN_BEGIN_X]
-                          [-y IN_BEGIN_Y] [-s IN_SIZE] [--min-angle MIN_ANGLE]
-                          [-m] [-o OUTPUT] [-q] [-r ROTATE] [-v] [-w WIDTH]
+                          [-y IN_BEGIN_Y] [--in-end-x IN_END_X]
+                          [--in-end-y IN_END_Y] [-s IN_SIZE]
+                          [--min-angle MIN_ANGLE] [-m] [-o OUTPUT] [-q]
+                          [-r ROTATE] [-v] [-w WIDTH]
                           IMAGE [IMAGE ...]
 
 Create equirectangular images from sphere images.
@@ -80,10 +82,14 @@ optional arguments:
                         not visible to the camera. (default: black)
   -x IN_BEGIN_X, --in-begin-x IN_BEGIN_X
                         X-coordinate of where the sphere begins in the input
-                        image. (default: None)
+                        image (inclusive). (default: None)
   -y IN_BEGIN_Y, --in-begin-y IN_BEGIN_Y
                         Y-coordinate of where the sphere begins in the input
-                        image. (default: None)
+                        image (inclusive). (default: None)
+  --in-end-x IN_END_X   X-coordinate of where the sphere ends in the input
+                        image (exclusive). (default: None)
+  --in-end-y IN_END_Y   Y-coordinate of where the sphere ends in the input
+                        image (exclusive). (default: None)
   -s IN_SIZE, --in-size IN_SIZE
                         Size (width or diameter) of the sphere in the input
                         image. Default is the largest size that will fit in
@@ -137,7 +143,9 @@ A complicated example of converting from an image of the Earth taken at
 35,786 km, which means that the Earth has an angular size of 17.3843° ("-a",
 "--angular-size" option). Offsetting 1 pixels (the "begin" options) to avoid a
 border leaves a 238 pixel size square ("-s", "--in-size" option) that tightly
-encloses the sphere to be converted.
+encloses the sphere to be converted. If it is easier to determine the right
+lower sides of the sphere in the input image then the "end" options can be used
+instead of the "begin" options.
 
 Verbose ("-v" option) is passed in order to get additional information. Verbose
 is the opposite of quiet ("-q", "--quiet" option). Note that options can be
