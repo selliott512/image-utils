@@ -196,10 +196,12 @@ def process_image(in_fname, out_fname):
              + "with size %d.") % (in_fname, in_begin_x, in_begin_y,
                                   in_end_x, in_end_y, in_size))
 
-    if max(in_end_x, in_end_y) > min_in:
-        fatal("For input image \"" + in_fname + "\" the region specified "
-                + "won't fit into " + str(min_in) + " pixels. Try "
-                + "specifying --in-size, or a lower value for it.")
+    if (in_begin_x < 0 or in_begin_y < 0) or \
+        (in_end_x > in_width or in_end_y > in_height):
+        fatal(("For input image \"%s\" with size %dx%d the region [%d, %d] - "
+              + "(%d, %d) specified won't fit. Try specifying --in-size, or "
+              + "a lower value for it.") % (in_fname, in_width, in_height,
+                in_begin_x, in_begin_y, in_end_x, in_end_y))
 
     if not args.width and not args.height:
         # Neither the width nor height was specified. Use the height of the
