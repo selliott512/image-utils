@@ -179,7 +179,7 @@ def process_image(in_fname, out_fname):
     if not in_size_y:
         in_size_y = min_in
     in_size_x_2 = in_size_x / 2.0
-    in_size_y_2 = in_size_x / 2.0
+    in_size_y_2 = in_size_y / 2.0
 
     # Now that the size is known the ranges can be calculated regardless of what
     # was specified.

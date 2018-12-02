@@ -117,16 +117,48 @@ pass_tests=(
     # The second test, but cropped.
     "$s2e -a 17.3843 --crop -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
-	# The third test, but specify the end instead of the beginning. This should
-	# produce the same output as the third test.
+    # The third test, but specify the end instead of the beginning. This should
+    # produce the same output as the third test.
     "$s2e -a 17.3843 --in-end-x 239 --in-end-y 239 --in-size 238 \
         -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
-	# The third test, but specify beginning and end instead of the size. This
-	# should produce the same output as the third test.
+    # The third test, but specify beginning and end instead of the size. This
+    # should produce the same output as the third test.
     "$s2e -a 17.3843 --in-begin-x 1 --in-begin-y 1 \
                      --in-end-x 239 --in-end-y 239 \
-        -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg" )
+        -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
+
+    # Similar to the first offset-green.png test, except with an ellipse.
+    # This should produce a bit of white around the edges in a symmetrical way.
+    "$s2e --in-begin-x 31 --in-end-x 225 --in-begin-y 55 --in-end-y 180 \
+        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
+
+    # The ellipse test, but with begin and size. This should produce the same
+    # output.
+    "$s2e --in-begin-x 31 --in-begin-y 55 --in-size-x 194 --in-size-y 125 \
+        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
+
+    # The ellipse test, but with end and size. This should produce the same
+    # output.
+    "$s2e --in-end-x 225 --in-end-y 180 --in-size-x 194 --in-size-y 125 \
+        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
+
+    # The previous test, but --in-size instead of --in-size-x testing that
+    # --in-size provides a default value for the --in-size-* options.
+    "$s2e --in-end-x 225 --in-end-y 180 --in-size 194 --in-size-y 125 \
+        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
+
+    # The ellipse test, but with begin, end and size. They must be consistent.
+    # This should produce the same output.
+    "$s2e --in-begin-x 31 --in-end-x 225 --in-end-x 225 --in-end-y 180 \
+        --in-size-x 194 --in-size-y 125 \
+        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
+
+    # Similar to the second offset-green.png test, except with an ellipse.
+    # This should produce solid green output due to the additional one pixel
+    # margin.
+    "$s2e --in-begin-x 32 --in-end-x 224 --in-begin-y 56 --in-end-y 179 \
+        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png" )
 
 # Tests that are expected have a non-zero exit.
 fail_tests=(
@@ -138,6 +170,14 @@ fail_tests=(
 
     # Outside the input image by one pixel.
     "$s2e --in-begin-x  1 --in-begin-y  1 \
+        -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
+
+    # Test that it is an error for the horizontal size to not be consistent.
+    "$s2e --in-begin-x 1 --in-end-x 10 --in-size-x 20 \
+        -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
+
+    # Test that it is an error for the vertical size to not be consistent.
+    "$s2e --in-begin-y 1 --in-end-y 10 --in-size-y 20 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green.png" )
 
 # Tests that aren't run because they are slow.
@@ -157,22 +197,30 @@ fi
 echo "Test output is in \"$tmp_dir\"."
 echo
 
+echo -e "\nStart of success tests (tests with an expected zero exit code).\n"
+
 # Run the tests
 test_num=0
 failures=0
 for test in "${pass_tests[@]}" "${fail_tests[@]}"
 do
     let test_num++
-    echo -n "Test #$test_num: "
 
     # Assume pass tests are first. Use the index to determine what is expected
     # of the exit code.
     if [[ $test_num -gt ${#pass_tests[@]} ]]
     then
+        if [[ -z $fail_expected ]]
+        then
+            echo -e "\nStart of fails tests (tests with an expected non-zero \
+exit code).\n"
+        fi
         fail_expected=t
     else
         unset fail_expected
     fi
+
+    echo -n "Test #$test_num: "
 
     if [[ $test == *--multi* ]]
     then
