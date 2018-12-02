@@ -89,8 +89,18 @@ def parse_args():
         help="Y-coordinate of where the sphere ends in the input image "
            + "(exclusive).")
     parser.add_argument("-s", "--in-size", type=int,
-        help="Size (width or diameter) of the sphere in the input image. "
-           + "Default is the largest size that will fit in the input image.")
+        help="Size (diameter) of the sphere in the input image. This can be "
+           + "overridden per dimension by the -in-size-* options. Default is "
+           + "the diameter of the largest circle that will fit in the input "
+           + "image.")
+    parser.add_argument("--in-size-x", type=int,
+        help="Horizontal size (width) of the sphere in the input image. "
+           + "Default is the diameter of the largest circle that will fit in "
+           + "the input image or --in-size if specified.")
+    parser.add_argument("--in-size-y", type=int,
+        help="Vertical size (height) of the sphere in the input image. "
+           + "Default is the diameter of the largest circle that will fit in "
+           + "the input image or --in-size if specified.")
     parser.add_argument("--min-angle", type=float, default=0.0,
         help="Minimum angle between line of sight and the surface of the "
            + "sphere. Pixels less than this will be hidden. Helpful when the "
@@ -118,6 +128,8 @@ def parse_args():
 
     args = parser.parse_args()
 
+    # Make sure that the options are consistent.
+
     if len(args.images) > 1 and args.output:
         # TODO: Come up with a format specifier system to allow a template to
         # be specified.
@@ -138,68 +150,63 @@ def process_image(in_fname, out_fname):
 
     min_in = min(in_width, in_height)
 
-    # The result of the following is that in_size will be known whether it is
-    # given explicitly or calculated, and the begin, end and --in-size options
-    # will all be guaranteed to be consisted.
-    in_size = None
-    in_size_x = None
-    in_size_y = None
-    in_begin_x = None
-    in_begin_y = None
-    in_end_x = None
-    in_end_y = None
-    if args.in_size:
-        in_size = args.in_size
-    if args.in_begin_x is not None and args.in_end_x is not None:
-        in_size_x = args.in_end_x - args.in_begin_x
-        if in_size is not None and in_size_x != in_size:
+    # The result of the following is that in_size_x and in_size_y will be known
+    # whether they are give explicitly or calculated, and the begin, end and
+    # size options will all be guaranteed to be consisted.
+    in_size_x = args.in_size_x if args.in_size_x else args.in_size
+    in_size_y = args.in_size_y if args.in_size_y else args.in_size
+    in_begin_x = args.in_begin_x
+    in_begin_y = args.in_begin_y
+    in_end_x = args.in_end_x
+    in_end_y = args.in_end_y
+    if in_begin_x is not None and in_end_x is not None:
+        in_size_x_calc = args.in_end_x - args.in_begin_x
+        if in_size_x and in_size_x_calc != in_size_x:
             fatal("X begin and end specified does not match the size "
-                  + str(in_size) + " specified.")
-        in_begin_x = args.in_begin_x
-        in_end_x = args.in_end_x
-    if args.in_begin_y is not None and args.in_end_y is not None:
-        in_size_y = args.in_end_y - args.in_begin_y
-        if in_size is not None and in_size_y != in_size:
+                  + str(in_size_x) + " specified.")
+        in_size_x = in_size_x_calc
+    if in_begin_y is not None and in_end_y is not None:
+        in_size_y_calc = args.in_end_y - args.in_begin_y
+        if in_size_y and in_size_y_calc != in_size_y:
             fatal("Y begin and end specified does not match the size "
-                  + str(in_size) + " specified.")
-        in_begin_y = args.in_begin_y
-        in_end_y = args.in_end_y
+                  + str(in_size_y) + " specified.")
+        in_size_y = in_size_y_calc
 
-    if in_size is None:
-        if in_size_x is not None:
-            in_size = in_size_x
-        elif in_size_y is not None:
-            in_size = in_size_y
-        else:
-            in_size = min_in
-    in_size_2 = in_size / 2.0
+    # For sizes that could not be determined use diameter of the largest circle
+    # that will fit in the input image (min_in).
+    if not in_size_x:
+        in_size_x = min_in
+    if not in_size_y:
+        in_size_y = min_in
+    in_size_x_2 = in_size_x / 2.0
+    in_size_y_2 = in_size_x / 2.0
 
-    # Now that the is known the ranges can be calculated regardless of what was
-    # specified.
+    # Now that the size is known the ranges can be calculated regardless of what
+    # was specified.
 
     if args.in_begin_x is not None and args.in_end_x is None:
         in_begin_x = args.in_begin_x
-        in_end_x = in_begin_x + in_size
+        in_end_x = in_begin_x + in_size_x
     elif args.in_begin_x is None and args.in_end_x is not None:
         in_end_x = args.in_end_x
-        in_begin_x = in_end_x - in_size
+        in_begin_x = in_end_x - in_size_x
     elif args.in_begin_x is None and args.in_end_x is None:
-        in_begin_x = (min_in - in_size) // 2
-        in_end_x = in_begin_x + in_size
+        in_begin_x = (min_in - in_size_x) // 2
+        in_end_x = in_begin_x + in_size_x
 
     if args.in_begin_y is not None and args.in_end_y is None:
         in_begin_y = args.in_begin_y
-        in_end_y = in_begin_y + in_size
+        in_end_y = in_begin_y + in_size_y
     elif args.in_begin_y is None and args.in_end_y is not None:
         in_end_y = args.in_end_y
-        in_begin_y = in_end_y - in_size
+        in_begin_y = in_end_y - in_size_y
     elif args.in_begin_y is None and args.in_end_y is None:
-        in_begin_y = (min_in - in_size) // 2
-        in_end_y = in_begin_y + in_size
+        in_begin_y = (min_in - in_size_y) // 2
+        in_end_y = in_begin_y + in_size_y
 
     verbose(("Input \"%s\" is [%d, %d] (inclusive) to (%d, %d) (exclusive) "
-             + "with size %d.") % (in_fname, in_begin_x, in_begin_y,
-                                  in_end_x, in_end_y, in_size))
+             + "with size %dx%d.") % (in_fname, in_begin_x, in_begin_y,
+                                  in_end_x, in_end_y, in_size_x, in_size_y))
 
     if (in_begin_x < 0 or in_begin_y < 0) or \
         (in_end_x > in_width or in_end_y > in_height):
@@ -211,8 +218,8 @@ def process_image(in_fname, out_fname):
     if not args.width and not args.height:
         # Neither the width nor height was specified. Use the height of the
         # input image.
-        out_height = in_size
-        out_width = 2 * in_size
+        out_height = in_size_y
+        out_width = 2 * out_height
     elif args.width and args.height:
         # Both  the height and width was specified, so use that.
         out_width = args.width
@@ -350,8 +357,8 @@ def process_image(in_fname, out_fname):
             # Convert from NDC coordinates to pixel coordinates. Note the "-"
             # for ndc_y since the Y-axis is the opposite direction for pixel
             # coordinates.
-            in_x = in_begin_x + in_size_2*(1 + ndc_x)
-            in_y = in_begin_y + in_size_2*(1 - ndc_y)
+            in_x = in_begin_x + in_size_x_2*(1 + ndc_x)
+            in_y = in_begin_y + in_size_y_2*(1 - ndc_y)
 
             if bl:
                 # Bilinear interpolation. This is a weighted average of the
