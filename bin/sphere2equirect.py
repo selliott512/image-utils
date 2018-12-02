@@ -142,7 +142,8 @@ def process_image(in_fname, out_fname):
     # given explicitly or calculated, and the begin, end and --in-size options
     # will all be guaranteed to be consisted.
     in_size = None
-    calc_in_size = None
+    in_size_x = None
+    in_size_y = None
     in_begin_x = None
     in_begin_y = None
     in_end_x = None
@@ -150,23 +151,27 @@ def process_image(in_fname, out_fname):
     if args.in_size:
         in_size = args.in_size
     if args.in_begin_x is not None and args.in_end_x is not None:
-        calc_in_size = args.in_end_x - args.in_begin_x
-        if in_size is not None and calc_in_size != in_size:
+        in_size_x = args.in_end_x - args.in_begin_x
+        if in_size is not None and in_size_x != in_size:
             fatal("X begin and end specified does not match the size "
-                  + str(in_size) + "specified.")
-        in_size = calc_in_size
+                  + str(in_size) + " specified.")
         in_begin_x = args.in_begin_x
         in_end_x = args.in_end_x
     if args.in_begin_y is not None and args.in_end_y is not None:
-        calc_in_size = args.in_end_y - args.in_begin_y
-        if in_size is not None and calc_in_size != in_size:
+        in_size_y = args.in_end_y - args.in_begin_y
+        if in_size is not None and in_size_y != in_size:
             fatal("Y begin and end specified does not match the size "
-                  + str(in_size) + "specified.")
-        in_size = calc_in_size
+                  + str(in_size) + " specified.")
         in_begin_y = args.in_begin_y
         in_end_y = args.in_end_y
+
     if in_size is None:
-        in_size = min_in
+        if in_size_x is not None:
+            in_size = in_size_x
+        elif in_size_y is not None:
+            in_size = in_size_y
+        else:
+            in_size = min_in
     in_size_2 = in_size / 2.0
 
     # Now that the is known the ranges can be calculated regardless of what was
