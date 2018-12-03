@@ -48,6 +48,7 @@ usage: sphere2equirect.py [-h] [-a ANGULAR_SIZE] [-b]
                           [--hidden-color HIDDEN_COLOR] [-x IN_BEGIN_X]
                           [-y IN_BEGIN_Y] [--in-end-x IN_END_X]
                           [--in-end-y IN_END_Y] [-s IN_SIZE]
+                          [--in-size-x IN_SIZE_X] [--in-size-y IN_SIZE_Y]
                           [--min-angle MIN_ANGLE] [-m] [-o OUTPUT] [-q]
                           [-r ROTATE] [-v] [-w WIDTH]
                           IMAGE [IMAGE ...]
@@ -91,9 +92,20 @@ optional arguments:
   --in-end-y IN_END_Y   Y-coordinate of where the sphere ends in the input
                         image (exclusive). (default: None)
   -s IN_SIZE, --in-size IN_SIZE
-                        Size (width or diameter) of the sphere in the input
-                        image. Default is the largest size that will fit in
-                        the input image. (default: None)
+                        Size (diameter) of the sphere in the input image. This
+                        can be overridden per dimension by the -in-size-*
+                        options. Default is the diameter of the largest circle
+                        that will fit in the input image. (default: None)
+  --in-size-x IN_SIZE_X
+                        Horizontal size (width) of the sphere in the input
+                        image. Default is the diameter of the largest circle
+                        that will fit in the input image or --in-size if
+                        specified. (default: None)
+  --in-size-y IN_SIZE_Y
+                        Vertical size (height) of the sphere in the input
+                        image. Default is the diameter of the largest circle
+                        that will fit in the input image or --in-size if
+                        specified. (default: None)
   --min-angle MIN_ANGLE
                         Minimum angle between line of sight and the surface of
                         the sphere. Pixels less than this will be hidden.
@@ -146,6 +158,11 @@ border leaves a 238 pixel size square ("-s", "--in-size" option) that tightly
 encloses the sphere to be converted. If it is easier to determine the right
 lower sides of the sphere in the input image then the "end" options can be used
 instead of the "begin" options.
+
+The begin and end options as well as the size options can be used to specify a
+non-square rectangular region that contains an ellipse to be mapped. This is
+helpful when the sphere is scaled due to atmospheric refraction or otherwise
+does not appear to be a circle.
 
 Verbose ("-v" option) is passed in order to get additional information. Verbose
 is the opposite of quiet ("-q", "--quiet" option). Note that options can be
