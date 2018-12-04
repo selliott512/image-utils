@@ -38,152 +38,152 @@ s2e="$root/bin/sphere2equirect.py"
 # Tests that are expected have a zero exit, and produce an exact output image.
 pass_tests=(
     # Try with bilinear (-b).
-    "$s2e -a 17.3843 -bfo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
+    "$s2e -v -a 17.3843 -bfo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
     # Above non-bilinear. This is faster, but more aliasing.
-    "$s2e -a 17.3843  -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
+    "$s2e -v -a 17.3843  -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
     # Same as the above, but select exactly the sphere in the input image.
     # This is the most correct usage for 90w-small.jpg in this test.
-    "$s2e -a 17.3843 --in-begin-x  1 --in-begin-y  1 --in-size 238 \
+    "$s2e -v -a 17.3843 --in-begin-x  1 --in-begin-y  1 --in-size 238 \
         -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
     # A green circle. It gets a few white pixels in a symmetrical way.
-    "$s2e             -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
+    "$s2e -v             -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
 
     # Same as above, two pixels smaller, which is pure green output.
-    "$s2e --in-begin-x  1 --in-begin-y  1 --in-size 238 \
+    "$s2e -v --in-begin-x  1 --in-begin-y  1 --in-size 238 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
 
     # A green circle at a particular offset.
-    "$s2e --in-begin-x 10 --in-begin-y 20 --in-size 200 \
+    "$s2e -v --in-begin-x 10 --in-begin-y 20 --in-size 200 \
         -fo $tmp_dir/\$test_num.png $test_data/in/offset-green.png"
 
     # Same as above, two pixels smaller, which is pure green output.
-    "$s2e --in-begin-x 11 --in-begin-y 21 --in-size 198 \
+    "$s2e -v --in-begin-x 11 --in-begin-y 21 --in-size 198 \
         -fo $tmp_dir/\$test_num.png $test_data/in/offset-green.png"
 
     # The green circle, but with the minimum angle set to 1/2 the angular size
     # of the first test resulting a similar black border as the first test.
     # There should be no white pixels.
-   "$s2e --min-angle 8.6922 -fo $tmp_dir/\$test_num.png \
+   "$s2e -v --min-angle 8.6922 -fo $tmp_dir/\$test_num.png \
         $test_data/in/green.png"
 
     # Part one of a full sized image that's the first image on the left, and
     # green on the right (but black on the right this part).
-    "$s2e -a 17.3843 --center-lon -90 -bfo $tmp_dir/\$test_num.png \
+    "$s2e -v -a 17.3843 --center-lon -90 -bfo $tmp_dir/\$test_num.png \
         $test_data/in/90w-small.jpg"
 
     # Part two of a full sized image that's the first image on the left, and
     # green on the right. This is different than other tests in that it takes
     # the image created by the previous test as input.
-    "$s2e -a 17.3843 --multi --center-lon 90 -bfo $tmp_dir/\$test_num.png \
+    "$s2e -v -a 17.3843 --multi --center-lon 90 -bfo $tmp_dir/\$test_num.png \
         $test_data/in/green.png"
 
     # Process an orthographic image centered over Chicago IL. Since the input
     # image was produced by G.Projector this image can be verified by importing
     # the equirectangular output into G.Projector and verifying that the
     # overlay is aligned.
-    "$s2e --center-lat 41.8781 --center-lon -87.6298 -fo $tmp_dir/\$test_num.png \
+    "$s2e -v --center-lat 41.8781 --center-lon -87.6298 -fo $tmp_dir/\$test_num.png \
         $test_data/in/chicago-small.png"
 
     # Process an orthographic image centered over Melbourne Australia.
     # See the previous test comment.
-    "$s2e --center-lat -37.8136 --center-lon 144.9631 -fo $tmp_dir/\$test_num.png \
+    "$s2e -v --center-lat -37.8136 --center-lon 144.9631 -fo $tmp_dir/\$test_num.png \
         $test_data/in/melbourne-small.png"
 
     # Like the Chicago test except the input image is rotated 45 degrees
     # clockwise.
-    "$s2e --center-lat 41.8781 --center-lon -87.6298 --rotate 45 \
+    "$s2e -v --center-lat 41.8781 --center-lon -87.6298 --rotate 45 \
         -fo $tmp_dir/\$test_num.png $test_data/in/chicago-small-rotate-45.png"
 
     # Like the Melbourne test except the input image is rotated -123 degrees
     # clockwise.
-    "$s2e --center-lat -37.8136 --center-lon 144.9631 --rotate -123 \
+    "$s2e -v --center-lat -37.8136 --center-lon 144.9631 --rotate -123 \
         -fo $tmp_dir/\$test_num.png $test_data/in/melbourne-small-rotate--123.png"
 
     # The Chicago test, but with magenta hidden pixels.
-    "$s2e --center-lat 41.8781 --center-lon -87.6298 --hidden-color magenta \
+    "$s2e -v --center-lat 41.8781 --center-lon -87.6298 --hidden-color magenta \
         -fo $tmp_dir/\$test_num.png $test_data/in/chicago-small.png"
 
     # The Chicago test, but with transparent hidden pixels.
-    "$s2e --center-lat 41.8781 --center-lon -87.6298 --hidden-color trans \
+    "$s2e -v --center-lat 41.8781 --center-lon -87.6298 --hidden-color trans \
         -fo $tmp_dir/\$test_num.png $test_data/in/chicago-small.png"
 
     # The green circle cropped. Since the output is square no hidden (black)
     # pixels remain.
-    "$s2e --crop -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
+    "$s2e -v --crop -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
 
     # The second test, but cropped.
-    "$s2e -a 17.3843 --crop -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
+    "$s2e -v -a 17.3843 --crop -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
     # The third test, but specify the end instead of the beginning. This should
     # produce the same output as the third test.
-    "$s2e -a 17.3843 --in-end-x 239 --in-end-y 239 --in-size 238 \
+    "$s2e -v -a 17.3843 --in-end-x 239 --in-end-y 239 --in-size 238 \
         -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
     # The third test, but specify beginning and end instead of the size. This
     # should produce the same output as the third test.
-    "$s2e -a 17.3843 --in-begin-x 1 --in-begin-y 1 \
+    "$s2e -v -a 17.3843 --in-begin-x 1 --in-begin-y 1 \
                      --in-end-x 239 --in-end-y 239 \
         -fo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
     # Similar to the first offset-green.png test, except with an ellipse.
     # This should produce a bit of white around the edges in a symmetrical way.
-    "$s2e --in-begin-x 31 --in-end-x 225 --in-begin-y 55 --in-end-y 180 \
+    "$s2e -v --in-begin-x 31 --in-end-x 225 --in-begin-y 55 --in-end-y 180 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
 
     # The ellipse test, but with begin and size. This should produce the same
     # output.
-    "$s2e --in-begin-x 31 --in-begin-y 55 --in-size-x 194 --in-size-y 125 \
+    "$s2e -v --in-begin-x 31 --in-begin-y 55 --in-size-x 194 --in-size-y 125 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
 
     # The ellipse test, but with end and size. This should produce the same
     # output.
-    "$s2e --in-end-x 225 --in-end-y 180 --in-size-x 194 --in-size-y 125 \
+    "$s2e -v --in-end-x 225 --in-end-y 180 --in-size-x 194 --in-size-y 125 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
 
     # The previous test, but --in-size instead of --in-size-x testing that
     # --in-size provides a default value for the --in-size-* options.
-    "$s2e --in-end-x 225 --in-end-y 180 --in-size 194 --in-size-y 125 \
+    "$s2e -v --in-end-x 225 --in-end-y 180 --in-size 194 --in-size-y 125 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
 
     # The ellipse test, but with begin, end and size. They must be consistent.
     # This should produce the same output.
-    "$s2e --in-begin-x 31 --in-end-x 225 --in-end-x 225 --in-end-y 180 \
+    "$s2e -v --in-begin-x 31 --in-end-x 225 --in-end-x 225 --in-end-y 180 \
         --in-size-x 194 --in-size-y 125 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
 
     # Similar to the second offset-green.png test, except with an ellipse.
     # This should produce solid green output due to the additional one pixel
     # margin.
-    "$s2e --in-begin-x 32 --in-end-x 224 --in-begin-y 56 --in-end-y 179 \
+    "$s2e -v --in-begin-x 32 --in-end-x 224 --in-begin-y 56 --in-end-y 179 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png" )
 
 # Tests that are expected have a non-zero exit.
 fail_tests=(
     # A command line option this not supported.
-    "$s2e --bad-option"
+    "$s2e -v --bad-option"
 
     # An input image that does not exist.
-    "$s2e -a 17.3843 -bfo $tmp_dir/\$test_num.png $test_data/in/not-exist.jpg"
+    "$s2e -v -a 17.3843 -bfo $tmp_dir/\$test_num.png $test_data/in/not-exist.jpg"
 
     # Outside the input image by one pixel.
-    "$s2e --in-begin-x  1 --in-begin-y  1 \
+    "$s2e -v --in-begin-x  1 --in-begin-y  1 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
 
     # Test that it is an error for the horizontal size to not be consistent.
-    "$s2e --in-begin-x 1 --in-end-x 10 --in-size-x 20 \
+    "$s2e -v --in-begin-x 1 --in-end-x 10 --in-size-x 20 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
 
     # Test that it is an error for the vertical size to not be consistent.
-    "$s2e --in-begin-y 1 --in-end-y 10 --in-size-y 20 \
+    "$s2e -v --in-begin-y 1 --in-end-y 10 --in-size-y 20 \
         -fo $tmp_dir/\$test_num.png $test_data/in/green.png" )
 
 # Tests that aren't run because they are slow.
 pass_slow_tests=(
     # A large version of test #3 with bilinear.
-    "$s2e -a 17.3843 --in-begin-x 7 --in-begin-y 7 --in-size 2044 \
+    "$s2e -v -a 17.3843 --in-begin-x 7 --in-begin-y 7 --in-size 2044 \
         -bfo $tmp_dir/\$test_num.png $test_data/in/90w-big.jpg" )
 
 ### Main ###
