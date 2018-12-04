@@ -158,7 +158,12 @@ pass_tests=(
     # This should produce solid green output due to the additional one pixel
     # margin.
     "$s2e -v --in-begin-x 32 --in-end-x 224 --in-begin-y 56 --in-end-y 179 \
-        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png" )
+        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse.png"
+
+    # The ellipse test, but using the --ellipse option with cropped output.
+    # This should produce the same output as the original ellipse test.
+    "$s2e --ellipse \
+        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse-crop.png" )
 
 # Tests that are expected have a non-zero exit.
 fail_tests=(

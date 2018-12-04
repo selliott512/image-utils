@@ -68,6 +68,9 @@ def parse_args():
     parser.add_argument("-c", "--crop", action="store_true",
         help="Crop the output image to the smallest rectangle possible such "
            + "that only hidden pixels are removed.")
+    parser.add_argument("-e", "--ellipse", action="store_true",
+        help="The input sphere image may be elliptical due to scaling along "
+           + "either the X or Y axis.")
     parser.add_argument("-f", "--force", action="store_true",
         help="Overwrite the output image.")
     parser.add_argument("--height", type=int, default=0,
@@ -172,12 +175,23 @@ def process_image(in_fname, out_fname):
                   + str(in_size_y) + " specified.")
         in_size_y = in_size_y_calc
 
-    # For sizes that could not be determined use diameter of the largest circle
-    # that will fit in the input image (min_in).
+    # Determine a default size.
     if not in_size_x:
-        in_size_x = min_in
+        if args.ellipse:
+            # If ellipse then the maximum possible X range.
+            in_begin_x_int = in_begin_x if in_begin_x is not None else 0
+            in_end_x_int = in_begin_x if in_end_x is not None else in_width
+            in_size_x = in_end_x_int - in_begin_x_int
+        else:
+            in_size_x = min_in
     if not in_size_y:
-        in_size_y = min_in
+        if args.ellipse:
+            # If ellipse then the maximum possible Y range.
+            in_begin_y_int = in_begin_y if in_begin_y is not None else 0
+            in_end_y_int = in_end_y if in_end_y is not None else in_height
+            in_size_y = in_end_y_int - in_begin_y_int
+        else:
+            in_size_y = min_in
     in_size_x_2 = in_size_x / 2.0
     in_size_y_2 = in_size_y / 2.0
 
@@ -191,7 +205,7 @@ def process_image(in_fname, out_fname):
         in_end_x = args.in_end_x
         in_begin_x = in_end_x - in_size_x
     elif args.in_begin_x is None and args.in_end_x is None:
-        in_begin_x = (min_in - in_size_x) // 2
+        in_begin_x = 0 if args.ellipse else (min_in - in_size_x) // 2
         in_end_x = in_begin_x + in_size_x
 
     if args.in_begin_y is not None and args.in_end_y is None:
@@ -201,7 +215,7 @@ def process_image(in_fname, out_fname):
         in_end_y = args.in_end_y
         in_begin_y = in_end_y - in_size_y
     elif args.in_begin_y is None and args.in_end_y is None:
-        in_begin_y = (min_in - in_size_y) // 2
+        in_begin_y = 0 if args.ellipse else (min_in - in_size_y) // 2
         in_end_y = in_begin_y + in_size_y
 
     verbose(("Input \"%s\" is [%d, %d] (inclusive) to (%d, %d) (exclusive) "
