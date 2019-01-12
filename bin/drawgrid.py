@@ -20,28 +20,49 @@
 
 from __future__ import print_function
 
-import os
-import sys
+# Imports
+
+import argparse
 
 from PIL import Image, ImageDraw
 
-if len(sys.argv) != 5:
-    print("Usage: " + sys.argv[0] + " fname width height step", file=sys.stderr)
-    sys.exit(1)
+# Draw a drid image.
+def draw_drid():
+    im = Image.new("RGB", (args.width, args.height), "white")
+    draw = ImageDraw.Draw(im)
 
-fname = sys.argv[1]
-width = int(sys.argv[2])
-height = int(sys.argv[3])
-step = int(sys.argv[4])
+    for x in range(0, args.width, args.step):
+        draw.line((x, 0) + (x, args.height - 1), fill="black")
 
-im = Image.new("RGB", (width, height), "white")
+    for y in range(0, args.height, args.step):
+        draw.line((0, y) + (args.width - 1, y), fill="black")
 
-draw = ImageDraw.Draw(im)
+    im.save(args.image)
 
-for x in range(0, width, step):
-    draw.line((x, 0) + (x, height - 1), fill="black")
+# Parse the command line arguments and store the result in 'args'.
+def parse_args():
+    global args
 
-for y in range(0, height, step):
-    draw.line((0, y) + (width - 1, y), fill="black")
+    parser = argparse.ArgumentParser(
+        description="Create a grid image.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-im.save(fname)
+    # The following is sorted by long argument.
+
+    parser.add_argument("-y", "--height", type=int, default=1080,
+        help="Height of the image created.")
+    parser.add_argument("-s", "--step", type=int, default=10,
+        help="Step between grid lines.")
+    parser.add_argument("-x", "--width", type=int, default=1920,
+        help="Width of the image created.")
+    parser.add_argument("image", metavar="IMAGE",
+        help="Output image filename.")
+
+    args = parser.parse_args()
+
+    return args
+
+# Main
+
+parse_args()
+draw_drid()
