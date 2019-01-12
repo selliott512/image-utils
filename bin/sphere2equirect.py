@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # sphere2equirect.py - Create equirectangular images from sphere images
-# Copyright (C)2018S Steven Elliott
+# Copyright (C)2019 Steven Elliott
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
