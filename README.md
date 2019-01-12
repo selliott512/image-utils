@@ -1,9 +1,11 @@
 # image-utils
 
-Open source command line utilities for working with images, which is currently
-only sphere2equirect.py.
+Open source command line utilities for working with images.
 
 image-utils has a small [home page](http://selliott.org/utilities/image-utils).
+
+See the "doc" directory for credit, development, license and version
+information.
 
 ## sphere2equirect.py
 
@@ -213,5 +215,69 @@ images.
 sphere2equirect.py -a 17.3843 --in-begin-x 1 --in-begin-y 1 --in-size 238 -v --center-lat 0 --center-lon -90 --rotate 0 --multi --hidden-color trans --crop --min-angle 1 -o /tmp/earth-equirect.png test/data/in/earth.jpg
 ```
 
-See the "doc" directory for credit, development, license and version
-information.
+## drawgrid.py
+
+drawgrid.py draws grids.
+
+### Installation
+
+[Python](https://www.python.org/) with the [Pillow](https://python-pillow.org/) image library is required (but plain PIL may also work).
+The downloaded or git cloned files can be run in place:
+```shell
+bin/drawgrid.py ...
+```
+
+#### Usage
+
+The usage can be seen by passing "-h" to drawgrid.py:
+
+```txt
+usage: drawgrid.py [-h] [-b BACKGROUND_COLOR] [-f FOREGROUND_COLOR]
+                   [-y HEIGHT] [-m] [-s STEP] [-x WIDTH]
+                   IMAGE
+
+Draw a grid image.
+
+positional arguments:
+  IMAGE                 Output image filename.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -b BACKGROUND_COLOR, --background-color BACKGROUND_COLOR
+                        The foreground color.. (default: white)
+  -f FOREGROUND_COLOR, --foreground-color FOREGROUND_COLOR
+                        The foreground color.. (default: black)
+  -y HEIGHT, --height HEIGHT
+                        Height of the image drawn. (default: 1080)
+  -m, --mark            Mark the center, up and right with circles. (default:
+                        False)
+  -s STEP, --step STEP  Step between grid lines. (default: 10)
+  -x WIDTH, --width WIDTH
+                        Width of the image drawn. (default: 1920)
+```
+#### Test
+
+There's a small test suite included at test/bin/test.sh. It works by comparing
+the images produces against expected images. It's possible that it only works
+on Linux.
+
+#### Examples
+
+##### Simple
+
+A simple example that creates a grid with all default values:
+
+```shell
+drawgrid.py simple-grid.png
+```
+
+##### Complicated
+
+A complicated example that creates grid with width of 500 ("-x", "--width"
+option) , height of 400 ("-y", "--height" option) and step of 20 ("-s", "--step"
+option). The background color ("-b", "--background-color" option) is red and
+the foreground color ("-f", "--foreground-color" option) is blue. The center,
+up and right is marked ("-m", "--mark" option):
+```shell
+drawgrid.py -x 500 -y 400 -s 20 -b red -f blue -m complicated-grid.png
+```
