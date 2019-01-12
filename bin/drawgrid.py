@@ -31,11 +31,17 @@ def draw_drid():
     im = Image.new("RGB", (args.width, args.height), "white")
     draw = ImageDraw.Draw(im)
 
-    for x in range(0, args.width, args.step):
-        draw.line((x, 0) + (x, args.height - 1), fill="black")
+    # Find the midpoint.
+    mid_x = args.width//2
+    mid_y = args.height//2
 
-    for y in range(0, args.height, args.step):
-        draw.line((0, y) + (args.width - 1, y), fill="black")
+    for x in range(0, mid_x, args.step):
+        draw.line((mid_x + x, 0) + (mid_x + x, args.height - 1), fill="black")
+        draw.line((mid_x - x, 0) + (mid_x - x, args.height - 1), fill="black")
+
+    for y in range(0, mid_y, args.step):
+        draw.line((0, mid_y + y) + (args.width - 1, mid_y + y), fill="black")
+        draw.line((0, mid_y - y) + (args.width - 1, mid_y - y), fill="black")
 
     im.save(args.image)
 
