@@ -28,7 +28,7 @@ from PIL import Image, ImageDraw
 
 # Draw a drid image.
 def draw_drid():
-    im = Image.new("RGB", (args.width, args.height), "white")
+    im = Image.new("RGB", (args.width, args.height), args.background_color)
     draw = ImageDraw.Draw(im)
 
     # Find the midpoint.
@@ -36,12 +36,16 @@ def draw_drid():
     mid_y = args.height//2
 
     for x in range(0, mid_x, args.step):
-        draw.line((mid_x + x, 0) + (mid_x + x, args.height - 1), fill="black")
-        draw.line((mid_x - x, 0) + (mid_x - x, args.height - 1), fill="black")
+        draw.line((mid_x + x, 0) + (mid_x + x, args.height - 1),
+                  fill=args.foreground_color)
+        draw.line((mid_x - x, 0) + (mid_x - x, args.height - 1),
+                  fill=args.foreground_color)
 
     for y in range(0, mid_y, args.step):
-        draw.line((0, mid_y + y) + (args.width - 1, mid_y + y), fill="black")
-        draw.line((0, mid_y - y) + (args.width - 1, mid_y - y), fill="black")
+        draw.line((0, mid_y + y) + (args.width - 1, mid_y + y),
+                  fill=args.foreground_color)
+        draw.line((0, mid_y - y) + (args.width - 1, mid_y - y),
+                  fill=args.foreground_color)
 
     im.save(args.image)
 
@@ -55,6 +59,10 @@ def parse_args():
 
     # The following is sorted by long argument.
 
+    parser.add_argument("-b", "--background-color", type=str, default="white",
+        help="The foreground color..")
+    parser.add_argument("-f", "--foreground-color", type=str, default="black",
+        help="The foreground color..")
     parser.add_argument("-y", "--height", type=int, default=1080,
         help="Height of the image created.")
     parser.add_argument("-s", "--step", type=int, default=10,
