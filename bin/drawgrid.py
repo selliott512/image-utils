@@ -78,7 +78,7 @@ def parse_args():
     # The following is sorted by long argument.
 
     parser.add_argument("-b", "--background-color", type=str, default="white",
-        help="The foreground color..")
+        help="The background color..")
     parser.add_argument("-f", "--foreground-color", type=str, default="black",
         help="The foreground color..")
     parser.add_argument("-y", "--height", type=int, default=1080,

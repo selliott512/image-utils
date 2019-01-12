@@ -244,7 +244,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -b BACKGROUND_COLOR, --background-color BACKGROUND_COLOR
-                        The foreground color.. (default: white)
+                        The background color.. (default: white)
   -f FOREGROUND_COLOR, --foreground-color FOREGROUND_COLOR
                         The foreground color.. (default: black)
   -y HEIGHT, --height HEIGHT
