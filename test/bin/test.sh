@@ -27,6 +27,7 @@ tmp_dir="/tmp/image-utils-$bname.$$" # Temp directory
 
 # Scripts to test.
 s2e="$root/bin/sphere2equirect.py"
+dg="$root/bin/drawgrid.py"
 
 # TODO: Comparing PNG files with "diff" is probably not robust. Find a way of
 # converting the PNGs to a canonical format by stripping comments and other
@@ -37,6 +38,8 @@ s2e="$root/bin/sphere2equirect.py"
 
 # Tests that are expected have a zero exit, and produce an exact output image.
 pass_tests=(
+    # sphere2equirect.py tests
+
     # Try with bilinear (-b).
     "$s2e -v -a 17.3843 -bfo $tmp_dir/\$test_num.png $test_data/in/90w-small.jpg"
 
@@ -163,11 +166,25 @@ pass_tests=(
     # The ellipse test, but using the --ellipse option with cropped output.
     # This should produce the same output as the original ellipse test.
     "$s2e --ellipse \
-        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse-crop.png" )
+        -fo $tmp_dir/\$test_num.png $test_data/in/green-ellipse-crop.png"
+
+    # drawgrid.py tests
+
+    # A default grid.
+    "$dg $tmp_dir/\$test_num.png"
+
+    # A grid with default values given explicitly. This should produce the
+    # same output as the above.
+    "$dg -x 1920 -y 1080 -s 10 -b white -f black $tmp_dir/\$test_num.png"
+
+    # A grid with non-default values.
+    "$dg -x 500 -y 400 -s 20 -b red -f blue -m $tmp_dir/\$test_num.png" )
 
 # Tests that are expected have a non-zero exit.
 fail_tests=(
-    # A command line option this not supported.
+    # sphere2equirect.py tests
+
+    # A command line option that not supported.
     "$s2e -v --bad-option"
 
     # An input image that does not exist.
@@ -183,7 +200,12 @@ fail_tests=(
 
     # Test that it is an error for the vertical size to not be consistent.
     "$s2e -v --in-begin-y 1 --in-end-y 10 --in-size-y 20 \
-        -fo $tmp_dir/\$test_num.png $test_data/in/green.png" )
+        -fo $tmp_dir/\$test_num.png $test_data/in/green.png"
+
+    # drawgrid.py tests
+
+    # A command line option that not supported.
+    "$s2e -v --bad-option" )
 
 # Tests that aren't run because they are slow.
 pass_slow_tests=(
